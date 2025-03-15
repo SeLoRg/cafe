@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fa;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        label {
+            font-size: 14px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        /* Стили для карточек заказов */
+        .order-card {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex: 1 1 calc(33.33% - 20px);
+            margin-right: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .order-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .order-card h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .order-card ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .order-card ul li {
+            margin-bottom: 8px;
+        }
+
+        .order-card .total-price {
+            font-weight: bold;
+            font-size: 16px;
+            color: #4CAF50;
+        }
+
+        .order-card .status {
+            font-size: 14px;
+            color: #777;
+        }
+
+        .order-card .dish-price {
+            color: #555;
+            font-size: 14px;
+        }
+
+        .order-card .order-details {
+            margin-top: 10px;
+        }
+        .dishes-list {
+            max-height: 100px; /* или другая удобная высота */
+            overflow-y: auto;
+            padding-right: 5px; /* чтобы скролл не наезжал на текст */
+        }
+        /* Контейнер для карточек заказов */
+        .orders-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        /* Стиль для поиска */
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* Модальное окно */
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #modal div {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            position: relative;
+        }
+
+        #modal input[type="text"],
+        #modal input[type="number"] {
+            width: 90%;
+            padding: 8px;
+            margin: 5px 0 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        #modal span {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        /* блок поиска и выручка*/
+        .search-revenue-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+        }
+
+        .search-container {
+            flex: 1; /* Чтобы заняло оставшееся место */
+        }
+
+        .revenue-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .revenue-container button {
+            margin-bottom: 10px;
+        }
+        .search-container input {
+            width: 80%;
+        }
+
+
+    </style>
+    <title>Управление заказами</title>
+</head>
+<body>
+
+<header>
+    <h1>Управление заказами</h1>
+</header>
+
+<main>
+    <h2>Добавить заказ</h2>
+    <label for="table_number">Номер стола:</label>
+    <input type="number" id="table_number">
+
+    <h3>Добавить блюдо</h3>
+    <label for="dish_name">Название блюда:</label>
+    <input type="text" id="dish_name">
+
+    <label for="dish_price">Цена блюда:</label>
+    <input type="number" id="dish_price" step="0.01">
+
+    <button onclick="addItem()">Добавить блюдо</button>
+
+    <h4>Добавленные блюда</h4>
+    <ul id="order-items-list"></ul>
+
+    <button onclick="addOrder()">Добавить заказ</button>
+
+
+    <h2>Поиск и выручка</h2>
+    <div class="search-revenue-container">
+        <div class="search-container">
+            <label for="search-query">Номер стола или статус:</label>
+            <input type="text" id="search-query" placeholder="Введите номер стола или статус" onkeydown="searchOnEnter(event)">
+        </div>
+
+        <div class="revenue-container">
+            <button onclick="getRevenue()">Рассчитать выручку</button>
+            <p>Общая выручка: <span id="revenue-amount">0₽</span></p>
+        </div>
+    </div>
+
+    <h2>Список заказов</h2>
+    <div id="orders-list" class="orders-container"></div>
+</main>
+
+<!-- Модальное окно для редактирования заказа -->
+<div id="modal">
+    <div>
+        <span onclick="closeModal()">&times;</span>
+        <h3>Редактировать заказ</h3>
+        <input type="hidden" id="modal-order-id">
+
+        <label for="modal-status">Статус:</label>
+        <select id="modal-status">
+            <option value="в ожидании">В ожидании</option>
+            <option value="готово">Готово</option>
+            <option value="оплачено">Оплачено</option>
+        </select>
+
+        <h4>Добавить блюдо</h4>
+        <label for="modal-dish-name">Название блюда:</label>
+        <input type="text" id="modal-dish-name">
+
+        <label for="modal-dish-price">Цена блюда:</label>
+        <input type="number" id="modal-dish-price" step="0.01">
+
+        <button onclick="addDishToModal()">Добавить блюдо</button>
+
+        <ul id="modal-dishes-list"></ul>
+
+        <button onclick="saveChanges()">Сохранить изменения</button>
+        <button onclick="deleteOrder()" style="background-color: red; margin-top: 10px;">Удалить заказ</button>
+    </div>
+</div>
+
+<script>
+// Обработка заказов
+let orders = [];
+let orderItems = [];
+let currentEditingOrder = null;
+
+window.onload = loadOrders;
+window.onload = function() {
+    loadOrders(); // Загружаем все заказы при загрузке страницы
+};
+function searchOnEnter(event) {
+    if (event.key === "Enter") {
+        searchOrders(); // Вызовем функцию поиска только при нажатии Enter
+    }
+}
+function loadOrders(tableNumber = "", status = "") {
+    const queryParams = new URLSearchParams();
+    if (tableNumber) queryParams.append("table_number", tableNumber);
+    if (status) queryParams.append("status", status);
+
+    fetch(`http://localhost:8001/api/orders/search?${queryParams.toString()}`)
+        .then(response => response.json())
+        .then(ordersData => {
+            orders = ordersData;
+            renderOrders();
+        });
+}
+
+function renderOrders() {
+    const ordersList = document.getElementById("orders-list");
+    ordersList.innerHTML = "";
+    if (orders.length === 0) {
+        ordersList.innerHTML = "<p>Заказы не найдены.</p>";
+    }
+    orders.forEach(order => {
+        const orderCard = document.createElement("div");
+        orderCard.classList.add("order-card");
+
+        orderCard.innerHTML = `
+            <h3>Заказ ID: ${order.id}</h3>
+            <p>Стол: ${order.table_number}, Статус: <span class="status">${order.status}</span></p>
+            <div class="order-details">
+                <strong>Блюда:</strong>
+                <ul class="dishes-list">
+                    ${
+                        order.items && Object.entries(order.items).length > 0
+                            ? Object.entries(order.items).map(([dish, price]) => `
+                                <li>${dish}: <span class="dish-price">${price}₽</span></li>
+                            `).join('')
+                            : '<li>Нет блюд в заказе</li>'
+                    }
+                </ul>
+                <p class="total-price">Общая стоимость: ${order.total_price}₽</p>
+            </div>
+        `;
+
+        orderCard.addEventListener("click", () => openModal(order));
+        ordersList.appendChild(orderCard);
+    });
+}
+
+function openModal(order) {
+    currentEditingOrder = { ...order };
+    document.getElementById("modal").style.display = "flex";
+    document.getElementById("modal-order-id").value = order.id;
+    document.getElementById("modal-status").value = order.status;
+    updateModalDishesList(order);
+}
+
+function updateModalDishesList(order) {
+    const dishesList = document.getElementById("modal-dishes-list");
+    dishesList.innerHTML = "";
+    Object.entries(order.items).forEach(([dish, price]) => {
+        const dishItem = document.createElement("li");
+        dishItem.textContent = `${dish}: ${price}₽`;
+        dishesList.appendChild(dishItem);
+    });
+}
+
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+function addDishToModal() {
+    const dishName = document.getElementById("modal-dish-name").value;
+    const dishPrice = parseFloat(document.getElementById("modal-dish-price").value);
+    if (dishName && !isNaN(dishPrice)) {
+        // Добавляем новое блюдо в текущий заказ
+        currentEditingOrder.items[dishName] = dishPrice;
+        updateModalDishesList(currentEditingOrder);
+    }
+}
+
+
+async function saveChanges() {
+    const updatedStatus = document.getElementById("modal-status").value;
+    currentEditingOrder.status = updatedStatus;
+
+    currentEditingOrder.items = Object.fromEntries(
+        Object.entries(currentEditingOrder.items).map(([dish, price]) => {
+            const dishPrice = parseFloat(price);
+            return [dish, dishPrice];
+        })
+    );
+
+    const response = await fetch(`http://localhost:8001/api/orders/${currentEditingOrder.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(currentEditingOrder)
+    });
+
+    if (response.ok) {
+        alert("Заказ обновлен!");
+        closeModal();
+        loadOrders(); // Перезагрузим список заказов
+    }
+}
+async function deleteOrder() {
+    const response = await fetch(`http://localhost:8001/api/orders/${currentEditingOrder.id}`, {
+        method: "DELETE"
+    });
+
+    if (response.ok) {
+        alert("Заказ удален!");
+        closeModal();
+        loadOrders(); // Перезагрузим список заказов
+    }
+}
+
+
+function searchOrders() {
+    const searchQuery = document.getElementById("search-query").value.trim();
+    let tableNumber = "";
+    let status = "";
+
+    if (!isNaN(searchQuery)) tableNumber = searchQuery;
+    else status = searchQuery;
+
+    loadOrders(tableNumber, status);
+}
+
+async function addItem() {
+    const dishName = document.getElementById("dish_name").value;
+    const dishPrice = parseFloat(document.getElementById("dish_price").value);
+    if (dishName && !isNaN(dishPrice)) {
+        orderItems.push({ dish: dishName, price: dishPrice });
+        updateOrderItemsList();
+    }
+}
+
+function updateOrderItemsList() {
+    const orderItemsList = document.getElementById("order-items-list");
+    orderItemsList.innerHTML = "";
+    orderItems.forEach((item, index) => {
+        const li = document.createElement("li");
+        li.classList.add("order-item");
+        li.innerHTML = `${item.dish}: <b>${item.price}₽</b>
+            <button onclick="removeItem(${index})">Удалить</button>`;
+        orderItemsList.appendChild(li);
+    });
+}
+
+function removeItem(index) {
+    orderItems.splice(index, 1);
+    updateOrderItemsList();
+}
+
+async function addOrder() {
+    const tableNumber = document.getElementById("table_number").value;
+    const orderData = {
+        table_number: tableNumber,
+        items: Object.fromEntries(orderItems.map(item => [item.dish, item.price])),
+        total_price: orderItems.reduce((acc, item) => acc + item.price, 0)
+    };
+
+    const response = await fetch("http://localhost:8001/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderData)
+    });
+
+    if (response.ok) {
+        alert("Заказ добавлен!");
+        loadOrders();
+        orderItems = []; // Очищаем список блюд
+        updateOrderItemsList();
+    }
+}
+async function getRevenue() {
+    const response = await fetch("http://localhost:8001/api/orders/revenue");
+    if (response.ok) {
+        const revenue = await response.json();
+        document.getElementById("revenue-amount").textContent = `${revenue}₽`;
+    } else {
+        alert("Ошибка при получении выручки");
+    }
+}
+</script>
+
+</body>
+</html>
