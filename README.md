@@ -33,7 +33,7 @@ cd cafe
 ```
 
 ## Сборка и запуск сервисов с помощью Docker Compose
-
+Перейдите в папку с проектом где находится файл docker-compose.yaml
 Для сборки и запуска всех сервисов используйте команду:
 
 ```bash
@@ -42,7 +42,7 @@ docker-compose up --build
 ## Применение миграций для базы данных
 После того как сервисы будут запущены, вам нужно выполнить миграции для базы данных с помощью Alembic. Для этого:
 
-Перейдите в контейнер в папку с проектом где находится docker-compose.yaml:
+Перейдите  в папку с проектом где находится docker-compose.yaml:
 
 ```bash
  docker compose run  alembic_service  alembic revision --autogenerate -m "First migrations"
